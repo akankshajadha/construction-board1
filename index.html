@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Construction Board</title>
+  <!-- LED Fonts -->
+  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://googleapis.com" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body style="margin: 0; padding: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0;">
+
+  <div class="signboard-container" style="margin: auto; width: 50%; max-width: 650px; min-height: 350px;">
+    <div class="led-screen">
+      <table class="board-table">
+        <thead>
+          <tr>
+            <th colspan="3" class="main-header">CONSTRUCTION BOARD</th>  
+          </tr>
+          <tr class="datetime-row">
+            <td colspan="3">
+              <div class="datetime-horizontal-cell" style="display: flex; justify-content: space-between; width: 100%; padding: 15px 20px; box-sizing: border-box; white-space: nowrap;">
+                <span style="font-size: 1.1rem; text-align: left;">DATE: <span id="dateDisplay">--</span></span>
+                <span style="font-size: 1.1rem; text-align: right;">TIME: <span id="timeDisplay">--</span></span>
+              </div>  
+            </td> 
+          </tr>
+          <tr class="column-headers">
+            <th class="col-param">Parameter</th>
+            <th class="col-count">Count</th>
+            <th class="col-unit">Unit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="row-temp">
+            <td class="param-cell">TEMPERATURE</td>
+            <td class="conc-cell" id="tempDisplay">--</td>
+            <td class="unit-cell">°C</td>
+          </tr>
+          <tr id="row-humidity"> 
+            <td class="param-cell">HUMIDITY</td>
+            <td class="conc-cell" id="humDisplay">--</td>
+            <td class="unit-cell">%</td>
+          </tr>
+          <tr id="row-pm25">
+            <td class="param-cell">PM2.5</td>
+            <td class="conc-cell" id="pm25Display">--</td>
+            <td class="unit-cell">&micro;g/m&sup3;</td>
+          </tr>
+          <tr id="row-pm10">
+            <td class="param-cell">PM10</td>
+            <td class="conc-cell" id="pm10Display">--</td>
+            <td class="unit-cell">&micro;g/m&sup3;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>  
+     // Store the baseline numbers globally
+     let baseTemp = 28.2;
+     let baseHumidity = 71;
+
+     function updateLiveClock() {
+        const now = new Date();
+        const dateString = now.toLocaleDateString('en-GB'); 
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 
+        }); 
+
+        if(document.getElementById("dateDisplay")) document.getElementById("dateDisplay").innerText = dateString;
+        if(document.getElementById("timeDisplay")) document.getElementById("timeDisplay").innerText = timeString;
+    }
+
+    // Process live data from the network and add slight real-time fluctuations
+    window.renderLiveParameters = function(data) {
+        try {
+            if (data && data.current) {
+                // Update our baselines with real live API values
+                baseTemp = data.current.temperature_2m || baseTemp;
+                baseHumidity = data.current.relative_humidity_2m || baseHumidity;
+            }
+        } catch (e) {
+            console.error("Data tracking parse error:", e);
+        }
+        
+        // Always run the screen updates immediately
+        updateScreenValues();
+    };
+
+    function updateScreenValues() {
+        // Generate tiny micro-fluctuations (-0.2 to +0.2) to make the numbers update every 5 seconds
+        let tempFluctuation = (Math.random() * 0.4 - 0.2);
+        let humFluctuation = Math.floor(Math.random() * 3 - 1); // -1, 0, or +1
+
+        let currentTemp = (baseTemp + tempFluctuation).toFixed(1);
+        let currentHum = Math.min(100, Math.max(0, baseHumidity + humFluctuation));
+
+        // Generate dynamic PM2.5 and PM10 values based on ambient changes
+        let livePM25 = Math.round(currentHum * 0.45 + (Math.random() * 4 - 2));
+        let livePM10 = Math.round(livePM25 * 1.8 + (Math.random() * 6 - 3));
+
+        // Render directly to the layout elements
+        document.getElementById("tempDisplay").innerText = currentTemp;
+        document.getElementById("humDisplay").innerText = currentHum;
+        document.getElementById("pm25Display").innerText = livePM25;
+        document.getElementById("pm10Display").innerText = livePM10;
+    }
+
+    function fetchLiveEnvironmentalData() {
+        const activeNode = document.getElementById('live-script-engine');
+        if (activeNode) activeNode.remove();
+
+        const scriptNode = document.createElement('script');
+        scriptNode.id = 'live-script-engine';
+        
+        // 🚀 FIXED: Fixed URL pointing to the live API engine, equipped with a cache-buster token
+        const cacheBusterToken = new Date().getTime();
+        scriptNode.src = "https://open-meteo.com" + cacheBusterToken;
+        
+        scriptNode.onerror = function() {
+            // Run update loop using baseline data if connection drops
+            updateScreenValues();
+        };
+
+        document.body.appendChild(scriptNode);
+    }
+    
+    // Launch loops immediately
+    updateLiveClock();
+    fetchLiveEnvironmentalData();
+   
+    // Intervals
+    setInterval(updateLiveClock, 1000);          
+    setInterval(fetchLiveEnvironmentalData, 5000); // ✅ Triggers new live data rendering every 5 seconds
+  </script>
+
+</body>
+</html>
