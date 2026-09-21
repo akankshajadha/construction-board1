@@ -11,9 +11,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body style="margin: 0; padding: 0; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0;">
+<!-- <div class="signboard-container" style="margin: 0; width: 100vw; height: 100vh; box-sizing: border-box;"> -->
+"
+  <!-- <div class="signboard-container" style="margin: auto; width: 1100%; max-width: 650px; min-height: 350px;"> -->
 
-  <div class="signboard-container" style="margin: auto; width: 50%; max-width: 650px; min-height: 350px;">
-    <div class="led-screen">
+    <div class="signboard-container">
+  <div class="led-screen">
+    
       <table class="board-table">
         <thead>
           <tr>
@@ -28,9 +32,9 @@
             </td> 
           </tr>
           <tr class="column-headers">
-            <th class="col-param">Parameter</th>
-            <th class="col-count">Count</th>
-            <th class="col-unit">Unit</th>
+            <th class="col-param"style="font-size: 5.5vh !important;">Parameter</th>
+            <th class="col-count"style="font-size: 5.5vh !important;">Count</th>
+            <th class="col-unit"style="font-size: 5.5vh !important;">Unit</th>
           </tr>
         </thead>
         <tbody>
@@ -47,12 +51,17 @@
           <tr id="row-pm25">
             <td class="param-cell">PM2.5</td>
             <td class="conc-cell" id="pm25Display">--</td>
-            <td class="unit-cell">&micro;g/m&sup3;</td>
+             <!-- <td class="unit-cell">&micro;g/m&sup3;</td> -->
+              <td class="unit-cell" style="text-transform: none !important;">&micro;g/m&sup3;</td>
           </tr>
           <tr id="row-pm10">
             <td class="param-cell">PM10</td>
             <td class="conc-cell" id="pm10Display">--</td>
-            <td class="unit-cell">&micro;g/m&sup3;</td>
+          <!-- <td class="unit-cell">&micro;g/m&sup3;</td> -->
+           <td class="unit-cell" style="text-transform: none !important;">&micro;g/m&sup3;</td>
+
+
+
           </tr>
         </tbody>
       </table>
